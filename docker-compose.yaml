@@ -1,0 +1,38 @@
+version: "3.3"
+services:
+  nginx:
+    image: nginx:1.18-alpine
+    container_name: nginx
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    depends_on:
+      - wikijs
+    ports:
+      - 80:80
+      - 443:443
+    restart: unless-stopped
+    volumes: 
+      - ./nginx/:/etc/nginx/conf.d
+  wikijs:
+    image: linuxserver/wikijs
+    container_name: wikijs
+    depends_on:
+      - database
+    env_file:
+      - wiki.env
+    volumes:
+      - /srv/WikiJS/config:/config
+      - /srv/WikiJS/data:/data
+    ports:
+      - 3000:3000
+    restart: unless-stopped
+  database:
+    image: "postgres" # use latest official postgres version
+    env_file:
+      - database.env # configure postgres
+    volumes:
+      - database-data:/var/lib/postgresql/data/ # persist data even if container shuts downvolumes:
+    restart: unless-stopped
+volumes:
+  database-data:
